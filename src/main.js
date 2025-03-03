@@ -90,14 +90,14 @@ scene.add(spheres)
 let lastScrollTime = 0;
 const scrollThrottleDelay = 2000; // 2 seconds
 let scrollCount = 0;
+let startY = 0;
 
-window.addEventListener('wheel', (event) => {
+function handleScroll(direction){
   const currentTime = Date.now();
 
   let scrollPosition = undefined
   
-  if (currentTime - lastScrollTime >= scrollThrottleDelay) {
-    event.deltaY < 0 ? scrollPosition = 'up' : scrollPosition = 'down';
+  if (currentTime - lastScrollTime < scrollThrottleDelay) return;
     lastScrollTime = currentTime;
 
     if (scrollPosition === 'up' && scrollCount === 0) {
@@ -108,7 +108,7 @@ window.addEventListener('wheel', (event) => {
 
 
     const header = document.querySelectorAll('.header');
-    if (event.deltaY > 0){
+    if (direction === 'down'){
     gsap.to(header, {
       duration: 1,
       y: `-=${100}%`,
@@ -146,8 +146,25 @@ window.addEventListener('wheel', (event) => {
     }
 
   }
+
+
+window.addEventListener('wheel', (event) => {
+  handleScroll(event.deltaY > 0 ? 'down' : 'up');
+}
+);
+
+window.addEventListener('touchstart', (event) => {
+  startY = event.touches[0].clientY; // Get initial touch position
 });
 
+window.addEventListener('touchend', (event) => {
+  let endY = event.changedTouches[0].clientY; // Get final touch position
+  let deltaY = startY - endY;
+
+  if (Math.abs(deltaY) > 50) { // Ensure it's a significant swipe
+    handleScroll(deltaY > 0 ? 'down' : 'up');
+  }
+});
 
 let clock = new THREE.Clock();
 
